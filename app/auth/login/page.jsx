@@ -1,7 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/clinet";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const LoginPage = () => {
@@ -10,7 +12,28 @@ const LoginPage = () => {
   const [loading, setloading] = useState(false);
   const [error, seterror] = useState("");
 
-  const handleLogin = () => {};
+  const supabase = createClient();
+  const router = useRouter();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setloading(true);
+    seterror(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+
+      router.push("/");
+    } catch (error) {
+      seterror(error instanceof Error ? error.message : "Login Failed");
+    } finally {
+      setloading(false);
+    }
+  };
   return (
     <main className="flex justify-center items-center bg-zinc-950 px-4 min-h-screen">
       <Card className="bg-zinc-900 p-8 border-zinc-800 w-full max-w-md">

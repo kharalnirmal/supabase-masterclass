@@ -1,7 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/clinet";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import React, { useState } from "react";
 
 const SignUpPage = () => {
@@ -10,7 +13,33 @@ const SignUpPage = () => {
   const [loading, setloading] = useState(false);
   const [error, seterror] = useState("");
 
-  const handleSignUp = () => {};
+  const supabase = createClient();
+  const router = useRouter();
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setloading(true);
+    seterror(null);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          // window.location.origin // "http://localhost:3000"
+          emailRedirectTo:
+            process.env.NEXT_PUBLIC_DEV_SUPABASE_URL || window.location.origin,
+        },
+      });
+      if (error) throw error;
+
+      router.push("/auth/signup-success");
+    } catch (error) {
+      seterror(error instanceof Error ? error.message : "Sign up Failed");
+    } finally {
+      setloading(false);
+    }
+  };
 
   return (
     <main className="flex justify-center items-center bg-zinc-950 px-4 min-h-screen">
